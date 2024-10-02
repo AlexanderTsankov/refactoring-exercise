@@ -6,181 +6,117 @@ import java.io.FileReader;
 import java.io.IOException;
 
 public class FundingRaised {
-    public static List<Map<String, String>> where(Map<String, String> options) throws IOException {
-        List<String[]> csvData = new ArrayList<String[]>();
-        CSVReader reader = new CSVReader(new FileReader("startup_funding.csv"));
-        String[] row = null;
 
-        while((row = reader.readNext()) != null) {
-            csvData.add(row);
+    // Константи за индекси в CSV файла
+    private static final int PERMALINK_INDEX = 0;
+    private static final int COMPANY_NAME_INDEX = 1;
+    private static final int NUMBER_EMPLOYEES_INDEX = 2;
+    private static final int CATEGORY_INDEX = 3;
+    private static final int CITY_INDEX = 4;
+    private static final int STATE_INDEX = 5;
+    private static final int FUNDED_DATE_INDEX = 6;
+    private static final int RAISED_AMOUNT_INDEX = 7;
+    private static final int RAISED_CURRENCY_INDEX = 8;
+    private static final int ROUND_INDEX = 9;
+
+    // Метод за филтриране на записите според зададените опции
+    public static List<Map<String, String>> filterByOptions(List<String[]> csvData, Map<String, String> options) {
+        List<String[]> filteredData = new ArrayList<>(csvData);
+
+        for (Map.Entry<String, String> option : options.entrySet()) {
+            String key = option.getKey();
+            String value = option.getValue();
+            filteredData.removeIf(row -> !matchesOption(row, key, value));
         }
 
-        reader.close();
-        csvData.remove(0);
-
-        if(options.containsKey("company_name")) {
-            List<String[]> results = new ArrayList<String[]> ();
-
-            for(int i = 0; i < csvData.size(); i++) {
-                if(csvData.get(i)[1].equals(options.get("company_name"))) {
-                    results.add(csvData.get(i));
-                }
-            }
-            csvData = results;
-        }
-
-        if(options.containsKey("city")) {
-            List<String[]> results = new ArrayList<String[]> ();
-
-            for(int i = 0; i < csvData.size(); i++) {
-                if(csvData.get(i)[4].equals(options.get("city"))) {
-                    results.add(csvData.get(i));
-                }
-            }
-            csvData = results;
-        }
-
-        if(options.containsKey("state")) {
-            List<String[]> results = new ArrayList<String[]> ();
-
-            for(int i = 0; i < csvData.size(); i++) {
-                if(csvData.get(i)[5].equals(options.get("state"))) {
-                    results.add(csvData.get(i));
-                }
-            }
-            csvData = results;
-        }
-
-        if(options.containsKey("round")) {
-            List<String[]> results = new ArrayList<String[]> ();
-
-            for(int i = 0; i < csvData.size(); i++) {
-                if(csvData.get(i)[9].equals(options.get("round"))) {
-                    results.add(csvData.get(i));
-                }
-            }
-            csvData = results;
-        }
-
-        List<Map<String, String>> output = new ArrayList<Map<String, String>>();
-
-        for(int i = 0; i < csvData.size(); i++) {
-            Map<String, String> mapped = new HashMap<String, String> ();
-            mapped.put("permalink", csvData.get(i)[0]);
-            mapped.put("company_name", csvData.get(i)[1]);
-            mapped.put("number_employees", csvData.get(i)[2]);
-            mapped.put("category", csvData.get(i)[3]);
-            mapped.put("city", csvData.get(i)[4]);
-            mapped.put("state", csvData.get(i)[5]);
-            mapped.put("funded_date", csvData.get(i)[6]);
-            mapped.put("raised_amount", csvData.get(i)[7]);
-            mapped.put("raised_currency", csvData.get(i)[8]);
-            mapped.put("round", csvData.get(i)[9]);
-            output.add(mapped);
-        }
-
-        return output;
+        return mapCsvData(filteredData);
     }
 
-    public static Map<String, String> findBy(Map<String, String> options) throws IOException, NoSuchEntryException {
-        List<String[]> csvData = new ArrayList<String[]>();
-        CSVReader reader = new CSVReader(new FileReader("startup_funding.csv"));
-        String[] row = null;
-
-        while((row = reader.readNext()) != null) {
-            csvData.add(row);
+    // Метод за проверка дали даден ред от CSV-то съвпада с опцията
+    private static boolean matchesOption(String[] row, String key, String value) {
+        switch (key) {
+            case "company_name":
+                return row[COMPANY_NAME_INDEX].equalsIgnoreCase(value);
+            case "city":
+                return row[CITY_INDEX].equalsIgnoreCase(value);
+            case "state":
+                return row[STATE_INDEX].equalsIgnoreCase(value);
+            case "round":
+                return row[ROUND_INDEX].equalsIgnoreCase(value);
+            default:
+                return true;
         }
-
-        reader.close();
-        csvData.remove(0);
-        Map<String, String> mapped = new HashMap<String, String> ();
-
-        for(int i = 0; i < csvData.size(); i++) {
-            if(options.containsKey("company_name")) {
-                if(csvData.get(i)[1].equals(options.get("company_name"))) {
-                    mapped.put("permalink", csvData.get(i)[0]);
-                    mapped.put("company_name", csvData.get(i)[1]);
-                    mapped.put("number_employees", csvData.get(i)[2]);
-                    mapped.put("category", csvData.get(i)[3]);
-                    mapped.put("city", csvData.get(i)[4]);
-                    mapped.put("state", csvData.get(i)[5]);
-                    mapped.put("funded_date", csvData.get(i)[6]);
-                    mapped.put("raised_amount", csvData.get(i)[7]);
-                    mapped.put("raised_currency", csvData.get(i)[8]);
-                    mapped.put("round", csvData.get(i)[9]);
-                } else {
-                    continue;
-                }
-            }
-
-            if(options.containsKey("city")) {
-                if(csvData.get(i)[4].equals(options.get("city"))) {
-                    mapped.put("permalink", csvData.get(i)[0]);
-                    mapped.put("company_name", csvData.get(i)[1]);
-                    mapped.put("number_employees", csvData.get(i)[2]);
-                    mapped.put("category", csvData.get(i)[3]);
-                    mapped.put("city", csvData.get(i)[4]);
-                    mapped.put("state", csvData.get(i)[5]);
-                    mapped.put("funded_date", csvData.get(i)[6]);
-                    mapped.put("raised_amount", csvData.get(i)[7]);
-                    mapped.put("raised_currency", csvData.get(i)[8]);
-                    mapped.put("round", csvData.get(i)[9]);
-                } else {
-                    continue;
-                }
-            }
-
-            if(options.containsKey("state")) {
-                if(csvData.get(i)[5].equals(options.get("state"))) {
-                    mapped.put("permalink", csvData.get(i)[0]);
-                    mapped.put("company_name", csvData.get(i)[1]);
-                    mapped.put("number_employees", csvData.get(i)[2]);
-                    mapped.put("category", csvData.get(i)[3]);
-                    mapped.put("city", csvData.get(i)[4]);
-                    mapped.put("state", csvData.get(i)[5]);
-                    mapped.put("funded_date", csvData.get(i)[6]);
-                    mapped.put("raised_amount", csvData.get(i)[7]);
-                    mapped.put("raised_currency", csvData.get(i)[8]);
-                    mapped.put("round", csvData.get(i)[9]);
-                } else {
-                    continue;
-                }
-            }
-
-            if(options.containsKey("round")) {
-                if(csvData.get(i)[9].equals(options.get("round"))) {
-                    mapped.put("permalink", csvData.get(i)[0]);
-                    mapped.put("company_name", csvData.get(i)[1]);
-                    mapped.put("number_employees", csvData.get(i)[2]);
-                    mapped.put("category", csvData.get(i)[3]);
-                    mapped.put("city", csvData.get(i)[4]);
-                    mapped.put("state", csvData.get(i)[5]);
-                    mapped.put("funded_date", csvData.get(i)[6]);
-                    mapped.put("raised_amount", csvData.get(i)[7]);
-                    mapped.put("raised_currency", csvData.get(i)[8]);
-                    mapped.put("round", csvData.get(i)[9]);
-                } else {
-                    continue;
-                }
-            }
-
-            return mapped;
-        }
-
-        throw new NoSuchEntryException();
     }
 
+    // Четене на CSV файла и връщане на данните без заглавния ред
+    public static List<String[]> readCsvData(String filePath) throws IOException {
+        List<String[]> csvData = new ArrayList<>();
+        try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
+            csvData = reader.readAll();
+        }
+        csvData.remove(0); // Премахваме заглавния ред
+        return csvData;
+    }
+
+    // Метод за преобразуване на CSV данните в списък от карти
+    public static List<Map<String, String>> mapCsvData(List<String[]> csvData) {
+        List<Map<String, String>> mappedData = new ArrayList<>();
+        for (String[] row : csvData) {
+            Map<String, String> record = new HashMap<>();
+            record.put("permalink", row[PERMALINK_INDEX]);
+            record.put("company_name", row[COMPANY_NAME_INDEX]);
+            record.put("number_employees", row[NUMBER_EMPLOYEES_INDEX]);
+            record.put("category", row[CATEGORY_INDEX]);
+            record.put("city", row[CITY_INDEX]);
+            record.put("state", row[STATE_INDEX]);
+            record.put("funded_date", row[FUNDED_DATE_INDEX]);
+            record.put("raised_amount", row[RAISED_AMOUNT_INDEX]);
+            record.put("raised_currency", row[RAISED_CURRENCY_INDEX]);
+            record.put("round", row[ROUND_INDEX]);
+            mappedData.add(record);
+        }
+        return mappedData;
+    }
+
+    // Основен метод за търсене на записи, съответстващи на дадените критерии
+    public static List<Map<String, String>> findFunding(Map<String, String> options) throws IOException {
+        List<String[]> csvData = readCsvData("startup_funding.csv");
+        return filterByOptions(csvData, options);
+    }
+
+    // Метод за намиране на един конкретен запис
+    public static Map<String, String> findSingleEntry(Map<String, String> options) throws IOException, NoSuchEntryException {
+        List<String[]> csvData = readCsvData("startup_funding.csv");
+        List<Map<String, String>> filteredResults = filterByOptions(csvData, options);
+
+        if (filteredResults.isEmpty()) {
+            throw new NoSuchEntryException("No matching entry found.");
+        }
+
+        return filteredResults.get(0);
+    }
+
+    // Main метод за тестване
     public static void main(String[] args) {
         try {
-            Map<String, String> options = new HashMap<String, String> ();
-            options.put("company_name", "Facebook");
-            options.put("round", "a");
-            System.out.print(FundingRaised.where(options).size());
-        } catch(IOException e) {
-            System.out.print(e.getMessage());
-            System.out.print("error");
+            Map<String, String> searchOptions = new HashMap<>();
+            searchOptions.put("company_name", "Facebook");
+            searchOptions.put("round", "a");
+
+            List<Map<String, String>> results = FundingRaised.findFunding(searchOptions);
+            System.out.println("Number of results: " + results.size());
+
+        } catch (IOException e) {
+            System.out.println("Error reading the CSV file: " + e.getMessage());
+        } catch (NoSuchEntryException e) {
+            System.out.println(e.getMessage());
         }
     }
 }
 
-class NoSuchEntryException extends Exception {}
+// Custom exception class
+class NoSuchEntryException extends Exception {
+    public NoSuchEntryException(String message) {
+        super(message);
+    }
+}
